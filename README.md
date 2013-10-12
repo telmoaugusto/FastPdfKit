@@ -1,5 +1,7 @@
 # FastPdfKit
 
+----
+
 This repository contains the FastPdfKit iOS library with some sample projects.
  
 FastPdfKit is a library that let you show pdf documents in iOS applications bypassing all performances and missing features problems related to QuickLook.
@@ -296,8 +298,67 @@ This guide is also available as [screencast number 4](http://fastpdfkit.com/tuto
 * Call the `actionOpenPlainDocument` method to open the document;
 * Enjoy.
 
-
 ## Changelog
+
+# Update Novembre 27, 2012
+* Added an xmlURL property to the Kiosk MenuViewController to customize the list 
+without subclassing.
+* Security framework added in xcconfig.
+
+# Update November 26, 2012
+* Improved handling of space glyph in the text
+* Bunch of small tweaks and fixes
+
+# Update October 2nd, 2012
+* Fixed a crash while reading certain documents annotations
+* Finally fixed layer shadow (again)
+* Fixed bad overflow mode page position with some documents
+* Sligthy changed starting page behavior, now the slider should update properly
+* Added a visited page system similar to web browser one, check the MFDocumentViewController.
+* You can now set the thumbnail and image cache folders
+
+# Update September 4th, 2012
+* Fixed missing iPhone toolbar images
+* Thumbnails are now JPEG
+* Added cache encryption, check MFDocumentViewController's cacheEncryptionKey for
+details. Security.framework is now REQUIRED.
+* Shadow offset now takes padding into account
+* Uninitialized rect in background op fixed
+
+# Update Augusth 30th, 2012
+* Solved rootViewController nil property for window in the app delegate (prevent 
+correct behavior on iOS6)
+
+# Update Augusth 28th, 2012
+* Page shadows are back
+* Added cocoaAnnotationsForPage: method to MFDocumentManager to get more Cocoa-friendly
+annotations data from the pdf
+
+### Update 4.0 RC1 (Augusth 1st, 2012)
+* Fixed a bunch crash 
+* Fixed a few memory leaks (one quite large)
+* If you dont see Chinese, Japanese or Korean text extracted, please download, unzip and add the CMaps for the language. You can get them here http://partners.adobe.com/public/developer/font/index.html
+* There are a few more options for the embedded thumbnail scroll view and page slider, and you can also choose the label for the individual page
+
+### Update 3.4.2 (June 28, 2012)
+* Fix for password protected documents not working anymore
+
+### Update 3.4.1 (June 2, 2012)
+
+* Removed some warnings;
+* Updated Extensions;
+* Fixed episodical crashes.
+
+### Update 3.4 (May 17, 2012)
+
+* Added a new pdf engine. It is enabled by default. You can switch back to the old version by untick the appropriate option in the *Settings* (this will be available until the final release). Feedback on performances is welcomed.
+
+The new version will attempt to cache pdf page images. If no `documentId` is set in the `MFDocumentViewController`, the default folders are in *Library/Caches/shared*, otherwise the cache is located in *Library/Caches/<documentId>*.
+
+Default settings should provide good performance on all devices, from the first iPad to the new one.
+Thumbnails generation has been moved inside the lib. Customization options for the thumbnail scroll view will be available in the final version.
+
+* Fixed occasional crash with dual core devices on startup
 
 ### Update 3.3.3 (March 23, 2012)
 * New rendering approach just for the new iPad (and its weak A5X CPU)
