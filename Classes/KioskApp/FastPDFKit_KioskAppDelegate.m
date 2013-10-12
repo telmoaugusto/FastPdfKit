@@ -16,11 +16,6 @@
 @synthesize window,navigationController;
 @synthesize menuVC_Kiosk;
 
--(NSUInteger)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
-    
-    return UIInterfaceOrientationMaskAll;
-}
-
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     // Load default settings
@@ -29,8 +24,11 @@
     NSString * settingsBundlePath = [bundlePath stringByAppendingPathComponent:@"Settings.bundle"];
     NSString * settingsPath = [NSBundle pathForResource:@"Root" ofType:@"plist" inDirectory:settingsBundlePath];
     
+    NSLog(@"Settings %@", settingsPath);
+    
     NSDictionary * settingsDictionary = [NSDictionary dictionaryWithContentsOfFile:settingsPath];
     [[NSUserDefaults standardUserDefaults] registerDefaults:settingsDictionary];
+    
     
     //Comment the line below to disable NewsStand remote Notification
     
@@ -68,15 +66,7 @@
 	if(isPad) {
 			aMenuViewController = [[MenuViewController_Kiosk alloc]initWithNibName:@"Kiosk_ipad" bundle:MF_BUNDLED_BUNDLE(@"FPKKioskBundle")];
 	} else {
-        
-        if (([[UIScreen mainScreen] bounds].size.height - 568.0) < FLT_EPSILON ) {
-        
-            aMenuViewController = [[MenuViewController_Kiosk alloc]initWithNibName:@"Kiosk_phone5" bundle:MF_BUNDLED_BUNDLE(@"FPKKioskBundle")];
-        
-        } else {
-            
-            aMenuViewController = [[MenuViewController_Kiosk alloc]initWithNibName:@"Kiosk_phone" bundle:MF_BUNDLED_BUNDLE(@"FPKKioskBundle")];
-        }		
+			aMenuViewController = [[MenuViewController_Kiosk alloc]initWithNibName:@"Kiosk_phone" bundle:MF_BUNDLED_BUNDLE(@"FPKKioskBundle")];
 	}
     
     menuVC_Kiosk = aMenuViewController;
@@ -85,7 +75,7 @@
 	[aNavController setNavigationBarHidden:YES];
 	[self setNavigationController:aNavController];
 	
-	[window setRootViewController:self.navigationController];
+	[window addSubview:[aNavController view]];
     [window makeKeyAndVisible];
 	
 	// Cleanup

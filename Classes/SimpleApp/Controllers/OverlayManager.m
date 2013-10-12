@@ -13,7 +13,7 @@
 - (NSArray *)documentViewController:(MFDocumentViewController *)dvc drawablesForPage:(NSUInteger)page{
     NSArray *array;
     if(page == 1){
-        array = [NSArray arrayWithObject:[[[Drawable alloc] init]autorelease]];
+        array = [NSArray arrayWithObject:[[Drawable alloc] init]];
     } else
         array = [NSArray array];
     return array;

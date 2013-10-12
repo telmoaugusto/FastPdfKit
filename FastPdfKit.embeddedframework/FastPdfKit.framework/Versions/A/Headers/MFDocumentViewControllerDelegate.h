@@ -16,6 +16,8 @@
 
 @optional
 
+-(void)documentViewController:(MFDocumentViewController *)dvc didChangeDirectionTo:(MFDocumentDirection)direction;
+
 /**
  This method will be called to notify the transition to a new page. Use this to update page number related UI's elements or synchronize selected actions.
  */

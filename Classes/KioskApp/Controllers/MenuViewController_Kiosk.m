@@ -7,8 +7,8 @@
 //
 
 #import "MenuViewController_Kiosk.h"
-#import <FastPdfKit/MFDocumentManager.h>
-#import <FastPdfKit/ReaderViewController.h>
+#import "MFDocumentManager.h"
+#import "ReaderViewController.h"
 #import "BookItemView.h"
 #import "XMLParser.h"
 #include <stdio.h>
@@ -26,7 +26,7 @@
 @synthesize graphicsMode;
 @synthesize scrollView;
 @synthesize interfaceLoaded;
-@synthesize xmlURL;
+
 
 -(IBAction)actionOpenPlainDocument:(NSString *)documentName {
 	
@@ -39,41 +39,30 @@
 	NSString *documentsDirectory = nil;
 	NSString *pdfPath = nil;
 	NSURL *documentUrl = nil;
-	NSString * resourceFolder = nil;
-    
+	
 	paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
 	documentsDirectory = [paths objectAtIndex:0];
 	pdfPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@/%@.pdf",documentName,documentName]];
-    documentUrl = [NSURL fileURLWithPath:pdfPath];
+	documentUrl = [NSURL fileURLWithPath:pdfPath];
     
-    resourceFolder = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@",documentName]];
+    pdfPath = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@",documentName]];
 	
 	// Now that we have the URL, we can allocate an istance of the MFDocumentManager class and use
 	// it to initialize an MFDocumentViewController subclass 	
 	
 	documentManager = [[MFDocumentManager alloc]initWithFileUrl:documentUrl];
     
-    documentManager.resourceFolder = resourceFolder;
+    documentManager.resourceFolder = pdfPath;
 	
 	documentViewController = [[ReaderViewController alloc]initWithDocumentManager:documentManager];
 	documentViewController.documentId = documentName;
-    
-    // Present as a navigation controller item
-    documentViewController.dismissBlock = ^{
-        [[self navigationController] popToViewController:self animated:YES];
-    };
-    [[self navigationController]pushViewController:documentViewController animated:YES]; // Present as vavigation controller item
-    
-    /*
-     // Present as a modal view controller
-    documentViewController.dismissBlock = ^{
-        [self dismissModalViewControllerAnimated:YES];
-    };
-     [self presentModalViewController:documentViewController animated:YES]; // Present as modal view controller
-    */
+	
+	[[self navigationController]pushViewController:documentViewController animated:YES];
     
 	[documentViewController release];
 	[documentManager release];
+	
+	
 }
 
 -(id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
@@ -88,8 +77,7 @@
 		bookItemViews = [[NSMutableArray alloc]init];
         
         xmlDirty = YES;
-        
-		self.xmlURL = [NSURL URLWithString:FPK_KIOSK_XML_URL];
+		
 	}
 	
 	return self;
@@ -108,14 +96,14 @@
         xmlDirty = NO;
     
         parser = [[XMLParser alloc] init];
-        
-        [parser parseXMLFileAtURL:self.xmlURL];
+        xmlUrl = [NSURL URLWithString:FPK_KIOSK_XML_URL];
+        [parser parseXMLFileAtURL:xmlUrl];
     
         if([parser isDone]) {
             
             self.documentsList = [parser parsedItems];
             
-        } else { // Embedded xml as backup.
+        } else {
             
             xmlUrl = [MF_BUNDLED_BUNDLE(@"FPKKioskBundle") URLForResource:FPK_KIOSK_XML_NAME withExtension:@"xml"];
             
@@ -129,12 +117,14 @@
         [parser release];
     }
     
+	//[self performSelector:@selector(buildInterface) withObject:nil afterDelay:0.5];
     [self buildInterface];
 }
 
 
 -(void)buildInterface{
 
+	UIScrollView * aScrollView = nil;
 	CGFloat yBorder = 0 ; 
 	UIImageView * anImageView = nil;
 	
@@ -167,7 +157,7 @@
 		thumbHOffsetLeft = 20.0;
 		thumHOffsetRight = 380.0;
 		frameHeight = 325.0;
-		scrollViewWidth = [[UIScreen mainScreen] bounds].size.width;
+		scrollViewWidth = 771.0;
 		scrollViewHeight = 875.0;
 		detailViewHeight = 665.0;
 		scrollViewVOffset = 130.0;
@@ -179,7 +169,7 @@
 		thumbHOffsetLeft = 10.0;
 		thumHOffsetRight = 160.0;
 		frameHeight = 115.0;
-		scrollViewWidth = [[UIScreen mainScreen] bounds].size.width;
+		scrollViewWidth = 323.0;
 		scrollViewHeight = 404.0;
 		detailViewHeight = 240.0;
 		scrollViewVOffset = 60.0;
@@ -187,29 +177,23 @@
 	
 	documentsCount = [documentsList count];
     
-    // Border.
+       // Border.
+        
+        if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
+            yBorder = scrollViewVOffset-3 ;
+        }else {
+            yBorder = scrollViewVOffset-1 ;
+        }
+        
+        anImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, yBorder, scrollViewWidth, 40)]; 
+        [anImageView setImage:[UIImage imageWithContentsOfFile:MF_BUNDLED_RESOURCE(@"FPKKioskBundle",@"border",@"png")]];
+        [self.view addSubview:anImageView];
+        [anImageView release];
     
-    if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-        yBorder = scrollViewVOffset-3 ;
-    }else {
-        yBorder = scrollViewVOffset-1 ;
-    }
-    
-    anImageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, yBorder, scrollViewWidth+2, 40)];
-    [anImageView setImage:[UIImage imageWithContentsOfFile:MF_BUNDLED_RESOURCE(@"FPKKioskBundle",@"border",@"png")]];
-    [anImageView setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleWidth];
-    [self.view addSubview:anImageView];
-    [anImageView release];
-    
-    
+	aScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, scrollViewVOffset, scrollViewWidth, scrollViewHeight)];
+	aScrollView.backgroundColor = [UIColor whiteColor];
+	aScrollView.contentSize = CGSizeMake(scrollViewWidth, detailViewHeight * ((documentsCount/2)+(documentsCount%2)));
 	
-	scrollView.backgroundColor = [UIColor whiteColor];
-	[scrollView setShowsVerticalScrollIndicator:NO];
-    
-    UIView *testViewContainer = [[UIView alloc] initWithFrame:CGRectMake((scrollView.frame.size.width-scrollViewWidth)/2, 0, scrollViewWidth,0)];
-	
-	[testViewContainer setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin];
-    
 	for (int i=1; i<= documentsCount ; i++) {
 		
 		titoloPdf = [[documentsList objectAtIndex: i-1] objectForKey: @"title"];
@@ -235,7 +219,7 @@
 		
 		bookItemView.view.frame = frame;
 		bookItemView.menuViewController = self;
-		[testViewContainer addSubview:bookItemView.view];
+		[aScrollView addSubview:bookItemView.view];
 		
 		// Adding stuff to their respective containers.
 		
@@ -249,14 +233,11 @@
 		
 	}
     
-    [testViewContainer setFrame:CGRectMake((scrollView.frame.size.width-scrollViewWidth)/2, 0, scrollViewWidth,((documentsCount/2)+(documentsCount%2))*detailViewHeight)];
+	self.scrollView = aScrollView;
+    [aScrollView release];
     
-    [scrollView addSubview:testViewContainer];
+	[self.view addSubview:scrollView];
     
-    [scrollView setContentSize:CGSizeMake(testViewContainer.frame.size.width, testViewContainer.frame.size.height)];
-	
-    [testViewContainer release];
-	
     interfaceLoaded = YES;
 }
 
@@ -310,7 +291,7 @@
     [downloadProgressView release];
     
     [scrollView release];
-    [xmlURL release];
+    
 	[bookItemViews release];
 	
     [super dealloc];
